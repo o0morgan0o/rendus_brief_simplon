@@ -1,0 +1,10 @@
+FROM alpine:latest AS unzipper 
+WORKDIR /tmp
+COPY ./master.zip /tmp/master.zip
+RUN unzip master.zip -d ./
+
+
+FROM php:latest 
+WORKDIR /var/www/html
+COPY --from=unzipper /tmp/Booth /var/www/html
+CMD ["php", "-S", "0.0.0.0:80", "-t", "/var/www/html"]

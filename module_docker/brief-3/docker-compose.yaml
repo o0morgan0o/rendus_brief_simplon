@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  web:
+    image: php7.4-apache:projet
+    container_name: projet-php-apache
+    ports:
+      # local:container
+      - "1337:80"
+    environment: 
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+      - COMPOSER_ALLOW_SUPERUSER=1
+    volumes:
+      # Volume stockant les fichiers web du projet
+      - .:/var/www/html
+      - ./logs:/var/log/apache2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    links:
+      # Lien vers le conteneur "db" (déclaré ci-après)
+      - db:db
+
+  pma:
+    image: phpmyadmin
+    container_name: projet-phpmyadmin
+    environment:
+      # https://docs.phpmyadmin.net/en/latest/setup.html#docker-environment-variables
+      PMA_HOST: db
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 1024M
+    ports:
+      - "8080:80"
+    links:
+      - db:db
+
+  db:
+    image: mariadb:latest
+    container_name: projet-mysql
+    expose:
+      - "3306"
+    volumes:
+      # Volume de la base de données
+      - ./db-data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: wordpress
+      MARIADB_ROOT_PASSWORD: my-secret-password
